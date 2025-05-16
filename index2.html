@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Rich Text Editor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar styles */
+        
+        .scrollbar-enhance::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        .scrollbar-enhance::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+        
+        .scrollbar-enhance::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 4px;
+        }
+        
+        .scrollbar-enhance::-webkit-scrollbar-thumb:hover {
+            background: #6b6b6b;
+        }
+        /* Custom list styles */
+        
+        .editor-content ul {
+            list-style-type: disc;
+            margin-left: 24px;
+        }
+        
+        .editor-content ul ul {
+            list-style-type: circle;
+            margin-left: 24px;
+        }
+        
+        .editor-content ul ul ul {
+            list-style-type: square;
+            margin-left: 24px;
+        }
+        
+        .editor-content ol {
+            list-style-type: decimal;
+            margin-left: 24px;
+        }
+        
+        .editor-content ol ol {
+            list-style-type: lower-alpha;
+            margin-left: 24px;
+        }
+        
+        .editor-content ol ol ol {
+            list-style-type: lower-roman;
+            margin-left: 24px;
+        }
+        
+        .editor-content .abc-list {
+            list-style-type: lower-alpha;
+        }
+        
+        .editor-content .abc-list .abc-list {
+            list-style-type: lower-roman;
+        }
+        /* Block element styles */
+        
+        .editor-content h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0.67em 0;
+        }
+        
+        .editor-content h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0.83em 0;
+        }
+        
+        .editor-content h3 {
+            font-size: 1.17rem;
+            font-weight: bold;
+            margin: 1em 0;
+        }
+        
+        .editor-content h4 {
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 1.33em 0;
+        }
+        
+        .editor-content h5 {
+            font-size: 0.83rem;
+            font-weight: bold;
+            margin: 1.67em 0;
+        }
+        
+        .editor-content h6 {
+            font-size: 0.67rem;
+            font-weight: bold;
+            margin: 2.33em 0;
+        }
+        
+        .editor-content p {
+            margin: 1em 0;
+        }
+        
+        .editor-content blockquote {
+            border-left: 4px solid #3b82f6;
+            margin: 1em 0;
+            padding-left: 16px;
+            color: #d1d5db;
+        }
+        
+        .editor-content pre {
+            font-family: monospace;
+            background: #1f2937;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 1em 0;
+            white-space: pre-wrap;
+        }
+        /* Active button style */
+        
+        .editor-toolbar button.active {
+            background: #3b82f6;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto p-4">
+        <form id="editorForm" onsubmit="return submitContent()">
+            <div class="editor-toolbar flex flex-wrap gap-2 bg-gray-800 border border-gray-700 p-2 rounded-t-md">
+                <button type="button" title="Undo" onclick="format('undo')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">↶</button>
+                <button type="button" title="Redo" onclick="format('redo')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">↷</button>
+                <select id="blockFormat" onchange="setBlockFormat(this)" class="bg-gray-700 border border-gray-600 px-2 py-1 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="P">Paragraph</option>
+                    <option value="H1">Heading 1</option>
+                    <option value="H2">Heading 2</option>
+                    <option value="H3">Heading 3</option>
+                    <option value="H4">Heading 4</option>
+                    <option value="H5">Heading 5</option>
+                    <option value="H6">Heading 6</option>
+                    <option value="BLOCKQUOTE">Quote</option>
+                    <option value="PRE">Preformatted</option>
+                </select>
+                <button type="button" title="Bold" onclick="format('bold')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="bold"><b>B</b></button>
+                <button type="button" title="Italic" onclick="format('italic')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="italic"><i>I</i></button>
+                <button type="button" title="Heading" onclick="formatBlock('H2')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">H</button>
+                <button type="button" title="Indent" onclick="format('indent')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">→</button>
+                <button type="button" title="Outdent" onclick="format('outdent')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">←</button>
+                <button type="button" title="Bullet List" onclick="insertList('ul')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="insertUnorderedList">• List</button>
+                <button type="button" title="Numbered List" onclick="insertList('ol')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="insertOrderedList">1. List</button>
+                <button type="button" title="ABC List" onclick="insertList('abc')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="insertOrderedList">a. List</button>
+                <button type="button" title="Insert Anchor" onclick="insertLink()" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">🔗</button>
+                <button type="button" title="Remove Anchor" onclick="removeLink()" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white">🚫</button>
+                <button type="button" title="Align Left" onclick="formatBlock('justifyLeft')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="justifyLeft">⇤</button>
+                <button type="button" title="Align Center" onclick="formatBlock('justifyCenter')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="justifyCenter">↔</button>
+                <button type="button" title="Align Right" onclick="formatBlock('justifyRight')" class="bg-gray-700 hover:bg-gray-600 border border-gray-600 px-2 py-1 rounded text-white" data-command="justifyRight">⇥</button>
+                <button type="button" class="color-btn w-5 h-5 rounded-full border border-gray-600" style="background:#e53935;" title="Red" onclick="setColor('#e53935')"></button>
+                <button type="button" class="color-btn w-5 h-5 rounded-full border border-gray-600" style="background:#3949ab;" title="Blue" onclick="setColor('#3949ab')"></button>
+                <button type="button" class="color-btn w-5 h-5 rounded-full border border-gray-600" style="background:#43a047;" title="Green" onclick="setColor('#43a047')"></button>
+            </div>
+            <div id="editor" class="editor-content min-h-[200px] bg-gray-800 border border-gray-700 p-3 rounded-b-md outline-none scrollbar-enhance" contenteditable="true">
+                <p>Sample content for the rich text editor.</p>
+            </div>
+            <input type="hidden" name="content" id="content">
+            <div class="mt-4">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+            </div>
+        </form>
+        <h3 class="mt-6 text-lg font-semibold">HTML Output:</h3>
+        <pre id="output" class="bg-gray-800 border border-gray-700 p-3 rounded mt-2 text-sm"></pre>
+    </div>
+
+    <script>
+        function format(command) {
+            document.execCommand(command, false, null);
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function formatBlock(command) {
+            if (command.startsWith('justify')) {
+                document.execCommand(command, false, null);
+            } else {
+                document.execCommand('formatBlock', false, command);
+            }
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function setBlockFormat(select) {
+            const tag = select.value;
+            const editor = document.getElementById('editor');
+            const selection = window.getSelection();
+
+            // Ensure editor has focus and selection is maintained
+            editor.focus();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                document.execCommand('formatBlock', false, tag);
+            }
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function updateBlockFormat() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                let node = range.startContainer;
+                if (node.nodeType !== 1) node = node.parentElement;
+                const block = node.closest('p, h1, h2, h3, h4, h5, h6, blockquote, pre') || document.querySelector('#editor p');
+                const select = document.getElementById('blockFormat');
+                const tag = block ? block.tagName : 'P';
+                select.value = tag;
+            }
+        }
+
+        function setColor(color) {
+            document.execCommand('foreColor', false, color);
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function insertLink() {
+            const url = prompt("Enter URL:");
+            if (url) {
+                document.execCommand('createLink', false, url);
+            }
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function removeLink() {
+            document.execCommand('unlink', false, null);
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function insertList(type) {
+            const editor = document.getElementById('editor');
+            const selection = window.getSelection();
+            let parentList = null;
+            let currentListItem = null;
+            if (selection.rangeCount > 0) {
+                let node = selection.getRangeAt(0).startContainer;
+                if (node.nodeType !== 1) node = node.parentElement;
+                parentList = node.closest('ul, ol, .abc-list');
+                currentListItem = node.closest('li');
+            }
+
+            if (type === 'ul') {
+                document.execCommand('insertUnorderedList', false, null);
+            } else if (type === 'ol') {
+                document.execCommand('insertOrderedList', false, null);
+            } else if (type === 'abc') {
+                document.execCommand('insertOrderedList', false, null);
+                setTimeout(() => {
+                    const lists = editor.querySelectorAll('ol:not(.abc-list)');
+                    lists.forEach(list => list.classList.add('abc-list'));
+                }, 0);
+            }
+
+            // Ensure new lists have a single empty item if needed
+            setTimeout(() => {
+                const lists = editor.querySelectorAll('ul, ol');
+                lists.forEach(list => {
+                    const items = list.querySelectorAll(':scope > li');
+                    if (items.length === 0) {
+                        const li = document.createElement('li');
+                        li.innerHTML = '<br>';
+                        list.appendChild(li);
+                    }
+                });
+            }, 0);
+
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function format(command) {
+            const editor = document.getElementById('editor');
+            const selection = window.getSelection();
+            let currentListItem = null;
+            if (selection.rangeCount > 0) {
+                let node = selection.getRangeAt(0).startContainer;
+                if (node.nodeType !== 1) node = node.parentElement;
+                currentListItem = node.closest('li');
+            }
+
+            if (command === 'indent' && currentListItem) {
+                // If in a list item, indent creates a sublist
+                const parentList = currentListItem.closest('ul, ol, .abc-list');
+                const listType = parentList.tagName.toLowerCase() === 'ul' ? 'ul' : 'ol';
+                const isAbcList = parentList.classList.contains('abc-list');
+                const range = selection.getRangeAt(0);
+                const newList = document.createElement(listType);
+                if (isAbcList) newList.classList.add('abc-list');
+                const newLi = document.createElement('li');
+                newLi.innerHTML = '<br>';
+                newList.appendChild(newLi);
+                currentListItem.appendChild(newList);
+                // Move cursor to the new sublist item
+                range.selectNodeContents(newLi);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+            } else {
+                document.execCommand(command, false, null);
+            }
+
+            updateBlockFormat();
+            updateButtonStates();
+        }
+
+        function updateButtonStates() {
+            const commands = [{
+                command: 'bold',
+                selector: '[data-command="bold"]'
+            }, {
+                command: 'italic',
+                selector: '[data-command="italic"]'
+            }, {
+                command: 'justifyLeft',
+                selector: '[data-command="justifyLeft"]'
+            }, {
+                command: 'justifyCenter',
+                selector: '[data-command="justifyCenter"]'
+            }, {
+                command: 'justifyRight',
+                selector: '[data-command="justifyRight"]'
+            }, {
+                command: 'insertUnorderedList',
+                selector: '[data-command="insertUnorderedList"]'
+            }, {
+                command: 'insertOrderedList',
+                selector: '[data-command="insertOrderedList"]'
+            }];
+
+            commands.forEach(({
+                command,
+                selector
+            }) => {
+                const button = document.querySelector(selector);
+                if (button) {
+                    const isActive = document.queryCommandState(command);
+                    button.classList.toggle('active', isActive);
+                }
+            });
+
+            // Special handling for ABC list
+            const abcButton = document.querySelector('[data-command="insertOrderedList"]');
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                let node = selection.getRangeAt(0).startContainer;
+                if (node.nodeType !== 1) node = node.parentElement;
+                const isAbcList = node.closest('.abc-list') !== null;
+                abcButton.classList.toggle('active', isAbcList && document.queryCommandState('insertOrderedList'));
+            }
+        }
+
+        function submitContent() {
+            const html = document.getElementById('editor').innerHTML;
+            document.getElementById('content').value = html;
+            document.getElementById('output').textContent = html;
+            return false;
+        }
+
+        // Prevent default for toolbar buttons only (exclude select)
+        document.querySelectorAll('.editor-toolbar button').forEach(btn => {
+            btn.addEventListener('mousedown', e => e.preventDefault());
+        });
+
+        // Update dropdown and button states on editor interaction
+        document.getElementById('editor').addEventListener('click', () => {
+            updateBlockFormat();
+            updateButtonStates();
+        });
+        document.getElementById('editor').addEventListener('input', () => {
+            updateBlockFormat();
+            updateButtonStates();
+        });
+        document.addEventListener('selectionchange', () => {
+            if (document.activeElement === document.getElementById('editor')) {
+                updateBlockFormat();
+                updateButtonStates();
+            }
+        });
+    </script>
+</body>
+
+</html>
