@@ -17,3 +17,5 @@ let alignLeftButton = RTEButtons.alignLeftButton(document.getElementById("aligh-
 let alignCenterButton = RTEButtons.alignCenterButton(document.getElementById("align-center"), "py-[10px] px-[20px] cursor-pointer bg-gray-200 rounded-[8px] text-[18px]", "py-[10px] px-[20px] cursor-pointer bg-white rounded-[8px] text-[18px]")
 let alignRightButton = RTEButtons.alignRightButton(document.getElementById("align-right"), "py-[10px] px-[20px] cursor-pointer bg-gray-200 rounded-[8px] text-[18px]", "py-[10px] px-[20px] cursor-pointer bg-white rounded-[8px] text-[18px]")
 let textColorButton = RTEButtons.textColorButton(document.getElementById("text-color"), "py-[10px] px-[20px] cursor-pointer bg-gray-200 rounded-[8px]", "py-[10px] px-[20px] cursor-pointer bg-white rounded-[8px]")
+
+RTEButtons.initEditor()
