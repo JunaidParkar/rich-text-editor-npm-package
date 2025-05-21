@@ -20,8 +20,6 @@ class TextEditor {
         this.__timeOuts = []
         this.__timeIntervals = []
 
-        console.log(this.__buttons)
-
         this.__addEventListener(this.__editor, "click", () => {
             this.__updateBlockFormat()
             this.__updateButtonState()
@@ -36,6 +34,123 @@ class TextEditor {
                 this.__updateButtonState()
             }
         })
+    }
+
+    __format(command) {
+        let selection = window.getSelection();
+        let currentListItem = null;
+        if (selection.rangeCount > 0) {
+            let node = selection.getRangeAt(0).startContainer;
+            if (node.nodeType !== 1) node = node.parentElement;
+            currentListItem = node.closest('li');
+        }
+
+        if (command === 'indent' && currentListItem) {
+            // If in a list item, indent creates a sublist
+            const parentList = currentListItem.closest('ul, ol, .abc-list');
+            const listType = parentList.tagName.toLowerCase() === 'ul' ? 'ul' : 'ol';
+            const isAbcList = parentList.classList.contains('abc-list');
+            const range = selection.getRangeAt(0);
+            const newList = document.createElement(listType);
+            if (isAbcList) newList.classList.add('abc-list');
+            const newLi = document.createElement('li');
+            newLi.innerHTML = '<br>';
+            newList.appendChild(newLi);
+            currentListItem.appendChild(newList);
+            // Move cursor to the new sublist item
+            range.selectNodeContents(newLi);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } else {
+            document.execCommand(command, false, null);
+        }
+
+        this.__updateBlockFormat()
+        this.__updateButtonState()
+    }
+
+    __formatBlock(command) {
+        if (command.startsWith('justify')) {
+            document.execCommand(command, false, null);
+        } else {
+            document.execCommand('formatBlock', false, command);
+        }
+        this.__updateBlockFormat()
+        this.__updateButtonState()
+    }
+
+    __setBlockFormat(select) {
+        let tag = select.value
+        let selection = window.getSelection();
+        this.__editor.focus()
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            document.execCommand('formatBlock', false, tag);
+        }
+
+        this.__updateBlockFormat()
+        this.__updateButtonState()
+    }
+
+    __setColor(color) {
+        document.execCommand('foreColor', false, color);
+        this.__updateBlockFormat()
+        this.__updateButtonState()
+    }
+
+    __insertLink() {
+        let url = prompt("Enter the URL", "http://");
+        if (url) {
+            document.execCommand('createLink', false, url);
+        }
+        this.__updateBlockFormat()
+        this.__updateButtonState()
+    }
+
+    __removeLink() {
+        document.execCommand('unlink', false, null);
+        this.__updateBlockFormat()
+        this.__updateButtonState()
+    }
+
+    __insertList(type) {
+        let selection = window.getSelection();
+        let parentList = null;
+        let currentListItem = null;
+        if (selection.rangeCount > 0) {
+            let node = selection.getRangeAt(0).startContainer;
+            if (node.nodeType !== 1) node = node.parentElement;
+            parentList = node.closest('ul, ol, .abc-list');
+            currentListItem = node.closest('li');
+        }
+
+        if (type === 'ul') {
+            document.execCommand('insertUnorderedList', false, null);
+        } else if (type === 'ol') {
+            document.execCommand('insertOrderedList', false, null);
+        } else if (type === 'abc') {
+            document.execCommand('insertOrderedList', false, null);
+            this.__setTimeout(() => {
+                const lists = this.__editor.querySelectorAll('ol:not(.abc-list)');
+                lists.forEach(list => list.classList.add('abc-list'));
+            }, 0);
+        }
+
+        this.__setTimeout(() => {
+            const lists = this.__editor.querySelectorAll('ul, ol');
+            lists.forEach(list => {
+                const items = list.querySelectorAll(':scope > li');
+                if (items.length === 0) {
+                    const li = document.createElement('li');
+                    li.innerHTML = '<br>';
+                    list.appendChild(li);
+                }
+            });
+        }, 0);
+
+        this.__updateBlockFormat()
+        this.__updateButtonState()
     }
 
     __updateBlockFormat() {
@@ -104,10 +219,10 @@ class TextEditor {
                 const isActive = document.queryCommandState(command);
                 if (isActive) {
                     selector.className = ""
-                    selector.classList.add(activeClass.split(" "))
+                    selector.classList.add(...activeClass.split(" "))
                 } else {
                     selector.className = ""
-                    selector.classList.add(className.split(" "))
+                    selector.classList.add(...className.split(" "))
                 }
             }
         });
@@ -123,10 +238,10 @@ class TextEditor {
             if (isAbcList) {
                 if (document.queryCommandState('insertOrderedList')) {
                     abcButton.className = ""
-                    abcButton.classList.add(abcActiveClass.split(" "))
+                    abcButton.classList.add(...abcActiveClass.split(" "))
                 } else {
                     abcButton.className = ""
-                    abcButton.classList.add(abcClassName.split(" "))
+                    abcButton.classList.add(...abcClassName.split(" "))
                 }
             }
         }
@@ -182,6 +297,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "redo")
         let data = {
             label: 'Redo',
             className: className,
@@ -199,6 +315,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "undo")
         let data = {
             label: 'Undo',
             className: className,
@@ -216,6 +333,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "indent")
         let data = {
             label: 'Indent Right',
             className: className,
@@ -233,6 +351,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "outdent")
         let data = {
             label: 'Indent Left',
             className: className,
@@ -281,6 +400,7 @@ class TextEditorButtons extends TextEditor {
         elem.className = ""
         elem.classList.add(...className.split(" "))
         elem.style.padding = 0
+        elem.onchange = e => this.__setBlockFormat.bind(this, e)
 
         let data = {
             label: 'Text Style',
@@ -301,6 +421,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "bold")
         let data = {
             label: 'Bold',
             className: className,
@@ -319,6 +440,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "italic")
         let data = {
             label: 'Italic',
             className: className,
@@ -337,6 +459,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "underline")
         let data = {
             label: 'Underline',
             className: className,
@@ -354,6 +477,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__insertLink.bind(this)
         let data = {
             label: 'Anchor',
             className: className,
@@ -371,6 +495,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__removeLink.bind(this)
         let data = {
             label: 'Remove Anchor',
             className: className,
@@ -388,6 +513,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "ul")
         let data = {
             label: 'Point List',
             className: className,
@@ -405,6 +531,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "ol")
         let data = {
             label: 'Numbered List',
             className: className,
@@ -422,6 +549,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "abc")
         let data = {
             label: 'Alpha List',
             className: className,
@@ -439,6 +567,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "justifyLeft")
         let data = {
             label: 'Align Left',
             className: className,
@@ -456,6 +585,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "justifyCenter")
         let data = {
             label: 'Align Center',
             className: className,
@@ -473,6 +603,7 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = this.__format.bind(this, "justifyRight")
         let data = {
             label: 'Align Right',
             className: className,
@@ -490,6 +621,14 @@ class TextEditorButtons extends TextEditor {
         elem.appendChild(t)
         elem.className = ""
         elem.classList.add(...className.split(" "))
+        elem.onclick = e => {
+            e.preventDefault()
+            e.stopPropagation()
+            t.click()
+        }
+        t.onchange = e => {
+            this.__setColor(e.target.value)
+        }
         let data = {
             label: 'Text Color',
             className: className,
