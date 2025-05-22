@@ -8,8 +8,8 @@ Subscript ✔️
 Superscript ✔️
 Font size ✔️
 Font Family
-Font color
-Bg color
+Font color ✔️
+Bg color ✔️
 
 **paragraph formatting**
 
@@ -19,19 +19,19 @@ quote ✔️
 code block (pre) ✔️
 horizontal line
 line height
-Text alignment
-Text direction
+Text alignment ✔️
+Text direction ✔️
 
 **lists**
 
-Bulleted lists
-Numbered lists
+Bulleted lists ✔️
+Numbered lists ✔️
 nested lists
 
 **indentations**
 
-indent
-outdent
+indent ✔️
+outdent ✔️
 
 **redo/undo**
 
@@ -40,5 +40,5 @@ undo ✔️
 
 **Links**
 
-add link
-remove link
+add link ✔️
+remove link ✔️
