@@ -5,11 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            border: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #1F2937;
+        }
+        
+        #editor-container {
+            width: calc(100% - 40px);
+            margin-top: 25px;
+            margin: 25px auto;
+        }
+    </style>
 </head>
 
 <body>
 
-    <div id="editor_container"></div>
+    <div id="editor-container"></div>
     <script src="./RTE.js"></script>
     <script src="./script.js"></script>
 </body>

@@ -1,22 +1,22 @@
 **basic formatting**
 
-Bold
-Italic
-Underline
-Strikethrough
-Subscript
-Superscript
-Font size
+Bold ✔️
+Italic ✔️
+Underline ✔️
+Strikethrough ✔️
+Subscript ✔️
+Superscript ✔️
+Font size ✔️
 Font Family
 Font color
 Bg color
 
 **paragraph formatting**
 
-Headings (1 to 6)
-paragraph
-quote
-code block (pre)
+Headings (1 to 6) ✔️
+paragraph ✔️
+quote ✔️
+code block (pre) ✔️
 horizontal line
 line height
 Text alignment
@@ -35,8 +35,8 @@ outdent
 
 **redo/undo**
 
-redo
-undo
+redo ✔️
+undo ✔️
 
 **Links**
 
