@@ -12,7 +12,7 @@ const buttonList = {
 }
 
 class RichText {
-  constructor(elem, mainBg="#f9fafb", buttonBG= "#e0e7ff", buttonBorder= "#c7d2fe", buttonClickBackground="#dbeafe", buttonClickBorder="#3b82f6", buttons=[]) {
+  constructor(elem, mainBg="#f9fafb", buttonBG= "#e0e7ff", buttonBorder= "#c7d2fe", buttonClickBackground="#dbeafe", buttonClickBorder="#3b82f6", buttons=[buttonList.BOLD, buttonList.UNDERLINE, buttonList.ITALIC, buttonList.ANCHOR]) {
     this.container = elem;
     this.buttons = buttons;
     this.mainBG = mainBg;
@@ -24,6 +24,14 @@ class RichText {
     this.toolbar = document.createElement("div");
     this.editor = document.createElement("div");
   }
+  
+  buttonCreator() {
+    let div = document.createElement("div")
+    div.style.padding = "10px 15px"
+    div.style.background = this.buttonBG
+    div.style.border = `1px solid ${this.buttonBorder}`
+    this.toolbar.appendChild(div)
+  }
 
   init() {
     this.container.style.backgroundColor = this.mainBG;
@@ -33,7 +41,12 @@ class RichText {
     this.toolbar.style.gap = "10px";
     this.toolbar.style.width = "100%";
     this.toolbar.style.flexWrap = "wrap";
-    this.toolbar.style.padding = "10px";
+    this.toolbar.style.padding = "10px 0";
+    
+    // Adding buttons
+    this.buttons.forEach(() => {
+      this.buttonCreator()
+    })
 
     // Editor styles
     this.editor.style.width = "100%";
