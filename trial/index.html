@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+    <div class="w-full flex flex-col gap-[20px] p-[20px]">
+        <div class="flex gap-[20px] flex-wrap">
+            <div id="undo"></div>
+            <div id="redo"></div>
+            <div id="indent-left"></div>
+            <div id="indent-right"></div>
+            <div id="text-style"></div>
+            <div id="bold"></div>
+            <div id="italic"></div>
+            <div id="underline"></div>
+            <div id="anchor"></div>
+            <div id="remove-anchor"></div>
+            <div id="point-list"></div>
+            <div id="num-list"></div>
+            <div id="alpha-list"></div>
+            <div id="aligh-left"></div>
+            <div id="align-center"></div>
+            <div id="align-right"></div>
+            <div id="text-color"></div>
+        </div>
+        <div class="w-full min-h-[200px] border-[1px] border-[red] p-[20px] rounded-[8px]" id="editor"></div>
+        <button class="h-max w-max px-[15px] py-[5px] bg-gray-600 text-white rounded-[8px]">submit</button>
+    </div>
+
+    <!-- <script src="./RTE.js"></script> -->
+    <script src="./RichTextEditor.js"></script>
+    <script src="./script.js"></script>
+</body>
+
+</html>
