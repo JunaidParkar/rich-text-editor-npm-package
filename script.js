@@ -1,6 +1,6 @@
 const buttonList = {
   BOLD: "b",
-  UNDERLINE: "ul",
+  UNDERLINE: "u",
   ITALIC: "i",
   UNORDERED_LIST: "ul",
   ORDERED_LIST: "ol",
@@ -8,7 +8,9 @@ const buttonList = {
   FORMATS: "f",
   ALIGNMENTS: "al",
   ANCHOR: "a",
-  IMAGE: "img"
+  IMAGE: "img",
+  TEXT_COLOR: "tc",
+  HIGHLIGHT: "h"
 }
 
 class RichText {
@@ -25,11 +27,16 @@ class RichText {
     this.editor = document.createElement("div");
   }
   
-  buttonCreator() {
+  buttonCreator(btn) {
     let div = document.createElement("div")
     div.style.padding = "10px 15px"
     div.style.background = this.buttonBG
     div.style.border = `1px solid ${this.buttonBorder}`
+    if (btn === buttonList.BOLD || btn === buttonList.ITALIC || btn === buttonList.UNDERLINE || btn === buttonList.ANCHOR) {
+      let b = document.createElement(btn)
+      b.innerText = btn
+      div.appendChild(b)
+    }
     this.toolbar.appendChild(div)
   }
 
@@ -44,8 +51,9 @@ class RichText {
     this.toolbar.style.padding = "10px 0";
     
     // Adding buttons
-    this.buttons.forEach(() => {
-      this.buttonCreator()
+    console.log(this.buttons)
+    this.buttons.forEach((btn) => {
+      this.buttonCreator(btn)
     })
 
     // Editor styles
